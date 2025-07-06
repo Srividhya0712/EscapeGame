@@ -1,0 +1,17 @@
+{
+  "name": "digital-maze-game",
+  "version": "1.0.0",
+  "description": "A two-stage web game built with HTML, CSS, and JavaScript featuring logic puzzles and maze navigation with a digital cyber theme.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["game", "puzzle", "maze", "digital", "escape"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}
