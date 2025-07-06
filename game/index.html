@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧩 Escape the Digital Maze</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #00ffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 8s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; animation-duration: 7s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; animation-duration: 6s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; animation-duration: 9s; }
+        .particle:nth-child(5) { left: 60%; animation-delay: 1.5s; animation-duration: 5s; }
+        .particle:nth-child(6) { left: 70%; animation-delay: 2.5s; animation-duration: 8s; }
+        .particle:nth-child(7) { left: 80%; animation-delay: 0.5s; animation-duration: 7s; }
+        .particle:nth-child(8) { left: 90%; animation-delay: 3.5s; animation-duration: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+        }
+
+        /* Game Interface */
+        .game-interface {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .game-header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ffff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .game-title i {
+            margin-right: 15px;
+            animation: rotate 4s linear infinite;
+        }
+
+        .game-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            color: #cccccc;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Main Content */
+        .game-main {
+            padding: 40px 20px;
+        }
+
+        .module-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .module-card.completed {
+            border-color: #00ff00;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+        }
+
+        .module-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #00ffff;
+        }
+
+        .module-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .module-card p {
+            color: #cccccc;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .module-btn {
+            background: linear-gradient(135deg, #00ffff, #0099cc);
+            color: #000000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #00ccff, #0077aa);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .module-btn:disabled {
+            background: #666666;
+            color: #999999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .module-status {
+            margin-top: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-status i {
+            font-size: 0.8rem;
+        }
+
+        /* Game Progress */
+        .game-progress {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00ffff, #00ff00);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        /* Game Info */
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #00ffff;
+        }
+
+        .info-item i {
+            font-size: 1.2rem;
+            color: #00ffff;
+        }
+
+        /* Footer */
+        .game-footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-top: 1px solid rgba(0, 255, 255, 0.3);
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .module-selection {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 1.8rem;
+            }
+            
+            .module-card {
+                padding: 20px;
+            }
+            
+            .game-interface {
+                border-radius: 15px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Background particles -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+
+        <!-- Main Game Interface -->
+        <div class="game-interface">
+            <header class="game-header">
+                <h1 class="game-title">
+                    <i class="fas fa-cube"></i>
+                    ESCAPE THE DIGITAL MAZE
+                </h1>
+                <p class="game-subtitle">You're trapped inside a virtual system. Solve puzzles and navigate the maze to escape!</p>
+            </header>
+
+            <main class="game-main">
+                <div class="module-selection">
+                    <div class="module-card" id="codebreaker-card">
+                        <div class="module-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h2>Codebreaker Room</h2>
+                        <p>Solve logic puzzles to unlock the access code</p>
+                        <button class="module-btn" id="start-codebreaker">
+                            <i class="fas fa-play"></i>
+                            Start Puzzles
+                        </button>
+                        <div class="module-status" id="codebreaker-status">
+                            <i class="fas fa-hourglass-half"></i>
+                            Ready to start
+                        </div>
+                    </div>
+
+                    <div class="module-card" id="maze-card">
+                        <div class="module-icon">
+                            <i class="fas fa-maze"></i>
+                        </div>
+                        <h2>Maze Room</h2>
+                        <p>Navigate the digital maze using your access code</p>
+                        <button class="module-btn" id="start-maze" disabled>
+                            <i class="fas fa-lock"></i>
+                            Locked
+                        </button>
+                        <div class="module-status" id="maze-status">
+                            <i class="fas fa-ban"></i>
+                            Requires access code
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progress-text">Begin your escape journey...</span>
+                    </div>
+                </div>
+
+                <div class="game-info">
+                    <div class="info-item">
+                        <i class="fas fa-keyboard"></i>
+                        <span>Use arrow keys to navigate</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-brain"></i>
+                        <span>Solve all puzzles to proceed</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-trophy"></i>
+                        <span>Escape to win!</span>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="game-footer">
+                <p>&copy; 2024 Digital Maze Escape | Built with HTML, CSS, JavaScript</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Game State Management
+        class GameState {
+            constructor() {
+                this.gameStartTime = null;
+                this.completedModules = new Set();
+                this.accessCode = null;
+                this.puzzlesSolved = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.loadGameState();
+                this.updateUI();
+            }
+            
+            bindEvents() {
+                // Module buttons
+                document.getElementById('start-codebreaker').addEventListener('click', (e) => {
+                    console.log('Codebreaker button clicked');
+                    e.preventDefault();
+                    this.startModule('codebreaker');
+                });
+                
+                document.getElementById('start-maze').addEventListener('click', (e) => {
+                    console.log('Maze button clicked');
+                    e.preventDefault();
+                    this.startModule('maze');
+                });
+            }
+            
+            startModule(moduleName) {
+                // Start game timer if not already started
+                if (!this.gameStartTime) {
+                    this.gameStartTime = Date.now();
+                }
+                
+                // Store current game state
+                this.saveGameState();
+                
+                // Navigate to module - fix the URL path
+                const moduleUrl = `${moduleName}.html`;
+                console.log('Navigating to module:', moduleUrl);
+                window.location.href = moduleUrl;
+            }
+            
+            updateUI() {
+                // Update codebreaker module
+                const codebreakerCard = document.getElementById('codebreaker-card');
+                const codebreakerBtn = document.getElementById('start-codebreaker');
+                const codebreakerStatus = document.getElementById('codebreaker-status');
+                
+                if (this.completedModules.has('codebreaker')) {
+                    codebreakerCard.classList.add('completed');
+                    codebreakerBtn.innerHTML = '<i class="fas fa-check"></i> Completed';
+                    codebreakerStatus.innerHTML = '<i class="fas fa-check-circle"></i> Puzzles solved!';
+                    codebreakerStatus.style.background = 'rgba(0, 255, 0, 0.2)';
+                    codebreakerStatus.style.color = '#00ff00';
+                } else {
+                    codebreakerBtn.innerHTML = '<i class="fas fa-play"></i> Start Puzzles';
+                    codebreakerStatus.innerHTML = '<i class="fas fa-hourglass-half"></i> Ready to start';
+                }
+                
+                // Update maze module
+                const mazeCard = document.getElementById('maze-card');
+                const mazeBtn = document.getElementById('start-maze');
+                const mazeStatus = document.getElementById('maze-status');
+                
+                if (this.completedModules.has('maze')) {
+                    mazeCard.classList.add('completed');
+                    mazeBtn.innerHTML = '<i class="fas fa-check"></i> Completed';
+                    mazeStatus.innerHTML = '<i class="fas fa-check-circle"></i> Maze escaped!';
+                    mazeStatus.style.background = 'rgba(0, 255, 0, 0.2)';
+                    mazeStatus.style.color = '#00ff00';
+                } else if (this.accessCode) {
+                    mazeBtn.disabled = false;
+                    mazeBtn.innerHTML = '<i class="fas fa-play"></i> Enter Maze';
+                    mazeStatus.innerHTML = '<i class="fas fa-unlock"></i> Access code ready';
+                    mazeStatus.style.background = 'rgba(0, 255, 255, 0.2)';
+                    mazeStatus.style.color = '#00ffff';
+                } else {
+                    mazeBtn.disabled = true;
+                    mazeBtn.innerHTML = '<i class="fas fa-lock"></i> Locked';
+                    mazeStatus.innerHTML = '<i class="fas fa-ban"></i> Requires access code';
+                }
+                
+                // Update progress
+                const totalModules = 2;
+                const completedCount = this.completedModules.size;
+                const progressPercentage = (completedCount / totalModules) * 100;
+                
+                document.getElementById('progress-fill').style.width = `${progressPercentage}%`;
+                
+                let progressText = '';
+                if (completedCount === 0) {
+                    progressText = 'Begin your escape journey...';
+                } else if (completedCount === 1) {
+                    progressText = 'Half way there! Complete the remaining module.';
+                } else {
+                    progressText = 'All modules completed! You have escaped!';
+                }
+                
+                document.getElementById('progress-text').textContent = progressText;
+            }
+            
+            saveGameState() {
+                const gameState = {
+                    gameStartTime: this.gameStartTime,
+                    completedModules: Array.from(this.completedModules),
+                    accessCode: this.accessCode,
+                    puzzlesSolved: this.puzzlesSolved
+                };
+                
+                localStorage.setItem('digitalMazeGameState', JSON.stringify(gameState));
+                
+                // Also save access code separately for modules to access
+                if (this.accessCode) {
+                    localStorage.setItem('digitalMazeAccessCode', this.accessCode);
+                }
+            }
+            
+            loadGameState() {
+                try {
+                    const savedState = localStorage.getItem('digitalMazeGameState');
+                    if (savedState) {
+                        const gameState = JSON.parse(savedState);
+                        this.gameStartTime = gameState.gameStartTime;
+                        this.completedModules = new Set(gameState.completedModules || []);
+                        this.accessCode = gameState.accessCode;
+                        this.puzzlesSolved = gameState.puzzlesSolved || 0;
+                        
+                        console.log('Game state loaded:', gameState);
+                    }
+                } catch (error) {
+                    console.error('Error loading game state:', error);
+                }
+            }
+        }
+
+        // Initialize game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Digital Maze Game initializing...');
+            
+            // Initialize game state
+            const gameState = new GameState();
+            
+            // Make gameState globally accessible for debugging
+            window.gameState = gameState;
+            
+            console.log('Game initialized successfully');
+        });
+    </script>
+</body>
+</html>
