@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebreaker Room - Digital Maze</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #00ffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 8s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; animation-duration: 7s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; animation-duration: 6s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; animation-duration: 9s; }
+        .particle:nth-child(5) { left: 60%; animation-delay: 1.5s; animation-duration: 5s; }
+        .particle:nth-child(6) { left: 70%; animation-delay: 2.5s; animation-duration: 8s; }
+        .particle:nth-child(7) { left: 80%; animation-delay: 0.5s; animation-duration: 7s; }
+        .particle:nth-child(8) { left: 90%; animation-delay: 3.5s; animation-duration: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+        }
+
+        /* Codebreaker Interface */
+        .codebreaker-interface {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        /* Module Header */
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 255, 255, 0.05));
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .module-title {
+            font-size: 1.8rem;
+            color: #00ffff;
+            text-align: center;
+            flex: 1;
+            margin: 0;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: #00ffff;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* Puzzle Container */
+        .puzzle-container {
+            padding: 30px;
+        }
+
+        /* Progress Indicator */
+        .puzzle-progress {
+            margin-bottom: 30px;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-step i {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: #666666;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .progress-step span {
+            font-size: 0.8rem;
+            color: #666666;
+            text-align: center;
+        }
+
+        .progress-step.completed i {
+            background: #00ff00;
+            color: #000000;
+        }
+
+        .progress-step.completed span {
+            color: #00ff00;
+        }
+
+        .progress-step.active i {
+            background: #00ffff;
+            color: #000000;
+            animation: pulse 2s infinite;
+        }
+
+        .progress-step.active span {
+            color: #00ffff;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+        }
+
+        /* Puzzle Cards */
+        .puzzle-card {
+            display: none;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .puzzle-card.active {
+            display: block;
+        }
+
+        .puzzle-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .puzzle-header h2 {
+            color: #00ffff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .puzzle-header p {
+            color: #cccccc;
+            font-size: 1rem;
+        }
+
+        .puzzle-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Number Sequence Puzzle */
+        .sequence-display {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .number-box {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .input-box {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .input-box input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: #00ffff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+        }
+
+        .input-box input::placeholder {
+            color: rgba(0, 255, 255, 0.5);
+        }
+
+        /* Color Pattern Puzzle */
+        .pattern-display {
+            margin-bottom: 20px;
+        }
+
+        .color-sequence {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            border: 2px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .color-box.red { background: #ff0000; }
+        .color-box.blue { background: #0000ff; }
+        .color-box.green { background: #00ff00; }
+        .color-box.yellow { background: #ffff00; }
+        .color-box.question {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1.5rem;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            border: 3px solid #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .color-btn.selected {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .color-btn.red { background: #ff0000; }
+        .color-btn.blue { background: #0000ff; }
+        .color-btn.green { background: #00ff00; }
+        .color-btn.yellow { background: #ffff00; }
+
+        /* Logic Grid Puzzle */
+        .logic-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .grid-row {
+            display: contents;
+        }
+
+        .grid-cell {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .input-cell {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .input-cell input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: #00ffff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+        }
+
+        /* Word Cipher Puzzle */
+        .cipher-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .encrypted-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #ff0000;
+            letter-spacing: 3px;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #00ffff;
+        }
+
+        .decrypted-input input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ffff;
+            text-align: center;
+            outline: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .decrypted-input input::placeholder {
+            color: rgba(0, 255, 255, 0.5);
+        }
+
+        .cipher-help {
+            text-align: center;
+            color: #cccccc;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        /* Puzzle Actions */
+        .puzzle-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .puzzle-btn {
+            background: linear-gradient(135deg, #00ffff, #0099cc);
+            color: #000000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .puzzle-btn:hover {
+            background: linear-gradient(135deg, #00ccff, #0077aa);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+
+        .puzzle-btn.primary {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+        }
+
+        .puzzle-btn.primary:hover {
+            background: linear-gradient(135deg, #00cc00, #009900);
+        }
+
+        .puzzle-btn.secondary {
+            background: linear-gradient(135deg, #666666, #444444);
+            color: #ffffff;
+        }
+
+        .puzzle-btn.secondary:hover {
+            background: linear-gradient(135deg, #777777, #555555);
+        }
+
+        .hint-btn {
+            background: rgba(255, 255, 0, 0.1);
+            border: 2px solid #ffff00;
+            color: #ffff00;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .hint-btn:hover {
+            background: rgba(255, 255, 0, 0.2);
+            transform: scale(1.05);
+        }
+
+        .hint-text {
+            display: none;
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 10px;
+            padding: 15px;
+            color: #ffff00;
+            font-size: 0.9rem;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .hint-text.visible {
+            display: block;
+        }
+
+        /* Access Code Card */
+        .access-code-card {
+            display: none;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+
+        .access-code-card.active {
+            display: block;
+        }
+
+        .code-header h2 {
+            color: #00ff00;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .code-header p {
+            color: #cccccc;
+            margin-bottom: 30px;
+        }
+
+        .code-display {
+            margin-bottom: 30px;
+        }
+
+        .access-code {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            padding: 20px 40px;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff00;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .copy-btn {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 255, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .module-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .module-title {
+                font-size: 1.5rem;
+            }
+            
+            .progress-indicator {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            
+            .sequence-display {
+                gap: 10px;
+            }
+            
+            .number-box {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .logic-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 3px;
+            }
+            
+            .grid-cell {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
+            
+            .encrypted-text {
+                font-size: 1.5rem;
+                padding: 15px 25px;
+            }
+            
+            .access-code {
+                font-size: 1.5rem;
+                padding: 15px 25px;
+                letter-spacing: 3px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .puzzle-container {
+                padding: 20px;
+            }
+            
+            .puzzle-card {
+                padding: 20px;
+            }
+            
+            .color-options {
+                gap: 10px;
+            }
+            
+            .color-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .puzzle-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .code-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Background particles -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+
+        <!-- Codebreaker Interface -->
+        <div class="codebreaker-interface">
+            <header class="module-header">
+                <button class="back-btn" id="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Menu
+                </button>
+                <h1 class="module-title">
+                    <i class="fas fa-lock"></i>
+                    Codebreaker Room
+                </h1>
+                <div class="timer" id="timer">
+                    <i class="fas fa-clock"></i>
+                    <span id="time-display">00:00</span>
+                </div>
+            </header>
+
+            <main class="puzzle-container">
+                <div class="puzzle-progress">
+                    <div class="progress-indicator">
+                        <div class="progress-step active" id="step-1">
+                            <i class="fas fa-puzzle-piece"></i>
+                            <span>Puzzle 1</span>
+                        </div>
+                        <div class="progress-step" id="step-2">
+                            <i class="fas fa-puzzle-piece"></i>
+                            <span>Puzzle 2</span>
+                        </div>
+                        <div class="progress-step" id="step-3">
+                            <i class="fas fa-puzzle-piece"></i>
+                            <span>Puzzle 3</span>
+                        </div>
+                        <div class="progress-step" id="step-4">
+                            <i class="fas fa-puzzle-piece"></i>
+                            <span>Puzzle 4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 1: Number Sequence -->
+                <div class="puzzle-card active" id="puzzle-1">
+                    <div class="puzzle-header">
+                        <h2><i class="fas fa-calculator"></i> Number Sequence</h2>
+                        <p>Complete the sequence: 2, 4, 8, 16, ?</p>
+                    </div>
+                    <div class="puzzle-content">
+                        <div class="sequence-display">
+                            <div class="number-box">2</div>
+                            <div class="number-box">4</div>
+                            <div class="number-box">8</div>
+                            <div class="number-box">16</div>
+                            <div class="number-box input-box">
+                                <input type="number" id="sequence-input" placeholder="?">
+                            </div>
+                        </div>
+                        <div class="puzzle-actions">
+                            <button class="puzzle-btn" id="submit-sequence">
+                                <i class="fas fa-check"></i>
+                                Submit
+                            </button>
+                            <div class="hint-btn" id="hint-1">
+                                <i class="fas fa-lightbulb"></i>
+                                Hint
+                            </div>
+                        </div>
+                        <div class="hint-text" id="hint-text-1">
+                            Each number is double the previous one.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 2: Color Pattern -->
+                <div class="puzzle-card" id="puzzle-2">
+                    <div class="puzzle-header">
+                        <h2><i class="fas fa-palette"></i> Color Pattern</h2>
+                        <p>Click the colors in the correct order based on the pattern shown</p>
+                    </div>
+                    <div class="puzzle-content">
+                        <div class="pattern-display">
+                            <div class="color-sequence">
+                                <div class="color-box red"></div>
+                                <div class="color-box blue"></div>
+                                <div class="color-box green"></div>
+                                <div class="color-box red"></div>
+                                <div class="color-box blue"></div>
+                                <div class="color-box question">?</div>
+                            </div>
+                        </div>
+                        <div class="color-options">
+                            <button class="color-btn red" data-color="red"></button>
+                            <button class="color-btn blue" data-color="blue"></button>
+                            <button class="color-btn green" data-color="green"></button>
+                            <button class="color-btn yellow" data-color="yellow"></button>
+                        </div>
+                        <div class="puzzle-actions">
+                            <button class="puzzle-btn" id="reset-colors">
+                                <i class="fas fa-undo"></i>
+                                Reset
+                            </button>
+                            <div class="hint-btn" id="hint-2">
+                                <i class="fas fa-lightbulb"></i>
+                                Hint
+                            </div>
+                        </div>
+                        <div class="hint-text" id="hint-text-2">
+                            The pattern repeats every 3 colors: Red, Blue, Green.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 3: Logic Grid -->
+                <div class="puzzle-card" id="puzzle-3">
+                    <div class="puzzle-header">
+                        <h2><i class="fas fa-th"></i> Logic Grid</h2>
+                        <p>Fill in the missing number in the grid</p>
+                    </div>
+                    <div class="puzzle-content">
+                        <div class="logic-grid">
+                            <div class="grid-row">
+                                <div class="grid-cell">3</div>
+                                <div class="grid-cell">6</div>
+                                <div class="grid-cell">9</div>
+                            </div>
+                            <div class="grid-row">
+                                <div class="grid-cell">2</div>
+                                <div class="grid-cell">4</div>
+                                <div class="grid-cell">6</div>
+                            </div>
+                            <div class="grid-row">
+                                <div class="grid-cell">5</div>
+                                <div class="grid-cell">10</div>
+                                <div class="grid-cell input-cell">
+                                    <input type="number" id="grid-input" placeholder="?">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="puzzle-actions">
+                            <button class="puzzle-btn" id="submit-grid">
+                                <i class="fas fa-check"></i>
+                                Submit
+                            </button>
+                            <div class="hint-btn" id="hint-3">
+                                <i class="fas fa-lightbulb"></i>
+                                Hint
+                            </div>
+                        </div>
+                        <div class="hint-text" id="hint-text-3">
+                            Each number in the row is multiplied by the first number of that row.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Puzzle 4: Word Cipher -->
+                <div class="puzzle-card" id="puzzle-4">
+                    <div class="puzzle-header">
+                        <h2><i class="fas fa-key"></i> Word Cipher</h2>
+                        <p>Decode the message using the Caesar cipher (shift by 3)</p>
+                    </div>
+                    <div class="puzzle-content">
+                        <div class="cipher-display">
+                            <div class="encrypted-text">HVFDSH</div>
+                            <div class="arrow">↓</div>
+                            <div class="decrypted-input">
+                                <input type="text" id="cipher-input" placeholder="Enter decoded word">
+                            </div>
+                        </div>
+                        <div class="cipher-help">
+                            <p>Caesar Cipher: A → D, B → E, C → F, etc.</p>
+                        </div>
+                        <div class="puzzle-actions">
+                            <button class="puzzle-btn" id="submit-cipher">
+                                <i class="fas fa-check"></i>
+                                Submit
+                            </button>
+                            <div class="hint-btn" id="hint-4">
+                                <i class="fas fa-lightbulb"></i>
+                                Hint
+                            </div>
+                        </div>
+                        <div class="hint-text" id="hint-text-4">
+                            Shift each letter 3 positions back in the alphabet.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Access Code Display -->
+                <div class="access-code-card" id="access-code-card">
+                    <div class="code-header">
+                        <h2><i class="fas fa-unlock"></i> Access Code Generated!</h2>
+                        <p>Use this code to access the Maze Room</p>
+                    </div>
+                    <div class="code-display">
+                        <div class="access-code" id="access-code-display">
+                            <span id="generated-code">----</span>
+                        </div>
+                        <button class="copy-btn" id="copy-code">
+                            <i class="fas fa-copy"></i>
+                            Copy Code
+                        </button>
+                    </div>
+                    <div class="code-actions">
+                        <button class="puzzle-btn primary" id="proceed-to-maze">
+                            <i class="fas fa-arrow-right"></i>
+                            Proceed to Maze
+                        </button>
+                        <button class="puzzle-btn secondary" id="back-to-menu">
+                            <i class="fas fa-home"></i>
+                            Back to Menu
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Codebreaker Module Logic
+        class CodebreakerGame {
+            constructor() {
+                this.currentPuzzle = 1;
+                this.solvedPuzzles = new Set();
+                this.startTime = Date.now();
+                this.timerInterval = null;
+                this.accessCode = null;
+                
+                this.puzzleAnswers = {
+                    1: 32,  // Number sequence: 2, 4, 8, 16, 32
+                    2: 'green',  // Color pattern: Red, Blue, Green repeats
+                    3: 15,  // Logic grid: 5 * 3 = 15
+                    4: 'ESCAPE'  // Caesar cipher: HVFDSH -> ESCAPE
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.startTimer();
+                this.bindEvents();
+                this.updateProgressIndicator();
+                this.showCurrentPuzzle();
+            }
+            
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    
+                    document.getElementById('time-display').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            bindEvents() {
+                // Back button
+                document.getElementById('back-btn').addEventListener('click', () => {
+                    this.goBackToMenu();
+                });
+                
+                // Puzzle 1: Number Sequence
+                document.getElementById('submit-sequence').addEventListener('click', () => {
+                    this.checkNumberSequence();
+                });
+                
+                document.getElementById('sequence-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.checkNumberSequence();
+                    }
+                });
+                
+                // Puzzle 2: Color Pattern
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.selectColor(btn.dataset.color);
+                    });
+                });
+                
+                document.getElementById('reset-colors').addEventListener('click', () => {
+                    this.resetColorSelection();
+                });
+                
+                // Puzzle 3: Logic Grid
+                document.getElementById('submit-grid').addEventListener('click', () => {
+                    this.checkLogicGrid();
+                });
+                
+                document.getElementById('grid-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.checkLogicGrid();
+                    }
+                });
+                
+                // Puzzle 4: Word Cipher
+                document.getElementById('submit-cipher').addEventListener('click', () => {
+                    this.checkWordCipher();
+                });
+                
+                document.getElementById('cipher-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.checkWordCipher();
+                    }
+                });
+                
+                // Hint buttons
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById(`hint-${i}`).addEventListener('click', () => {
+                        this.showHint(i);
+                    });
+                }
+                
+                // Access code actions
+                document.getElementById('copy-code').addEventListener('click', () => {
+                    this.copyAccessCode();
+                });
+                
+                document.getElementById('proceed-to-maze').addEventListener('click', () => {
+                    this.proceedToMaze();
+                });
+                
+                document.getElementById('back-to-menu').addEventListener('click', () => {
+                    this.goBackToMenu();
+                });
+            }
+            
+            showCurrentPuzzle() {
+                // Hide all puzzles
+                document.querySelectorAll('.puzzle-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                
+                // Show current puzzle
+                const currentCard = document.getElementById(`puzzle-${this.currentPuzzle}`);
+                if (currentCard) {
+                    currentCard.classList.add('active');
+                }
+                
+                // Show access code if all puzzles are solved
+                if (this.solvedPuzzles.size === 4) {
+                    document.getElementById('access-code-card').classList.add('active');
+                }
+            }
+            
+            updateProgressIndicator() {
+                for (let i = 1; i <= 4; i++) {
+                    const step = document.getElementById(`step-${i}`);
+                    step.classList.remove('active', 'completed');
+                    
+                    if (this.solvedPuzzles.has(i)) {
+                        step.classList.add('completed');
+                    } else if (i === this.currentPuzzle) {
+                        step.classList.add('active');
+                    }
+                }
+            }
+            
+            checkNumberSequence() {
+                const input = document.getElementById('sequence-input');
+                const answer = parseInt(input.value);
+                
+                if (answer === this.puzzleAnswers[1]) {
+                    this.solvePuzzle(1);
+                    this.showSuccess('Correct! Each number doubles the previous one.');
+                } else {
+                    this.showError('Incorrect. Try again!');
+                    input.value = '';
+                }
+            }
+            
+            selectColor(color) {
+                // Remove previous selection
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                // Add selection to clicked button
+                document.querySelector(`[data-color="${color}"]`).classList.add('selected');
+                
+                // Check if correct
+                if (color === this.puzzleAnswers[2]) {
+                    this.solvePuzzle(2);
+                    this.showSuccess('Correct! The pattern repeats: Red, Blue, Green.');
+                } else {
+                    this.showError('Incorrect color. Try again!');
+                    setTimeout(() => {
+                        this.resetColorSelection();
+                    }, 1000);
+                }
+            }
+            
+            resetColorSelection() {
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+            }
+            
+            checkLogicGrid() {
+                const input = document.getElementById('grid-input');
+                const answer = parseInt(input.value);
+                
+                if (answer === this.puzzleAnswers[3]) {
+                    this.solvePuzzle(3);
+                    this.showSuccess('Correct! The pattern is: first number × 3 = last number.');
+                } else {
+                    this.showError('Incorrect. Look at the pattern more carefully!');
+                    input.value = '';
+                }
+            }
+            
+            checkWordCipher() {
+                const input = document.getElementById('cipher-input');
+                const answer = input.value.toUpperCase().trim();
+                
+                if (answer === this.puzzleAnswers[4]) {
+                    this.solvePuzzle(4);
+                    this.showSuccess('Correct! HVFDSH decodes to ESCAPE.');
+                } else {
+                    this.showError('Incorrect. Remember to shift each letter back by 3 positions!');
+                    input.value = '';
+                }
+            }
+            
+            solvePuzzle(puzzleNumber) {
+                this.solvedPuzzles.add(puzzleNumber);
+                
+                // Move to next puzzle or show access code
+                if (this.solvedPuzzles.size === 4) {
+                    this.generateAccessCode();
+                } else {
+                    this.currentPuzzle = this.getNextUnsolvedPuzzle();
+                    this.showCurrentPuzzle();
+                }
+                
+                this.updateProgressIndicator();
+            }
+            
+            getNextUnsolvedPuzzle() {
+                for (let i = 1; i <= 4; i++) {
+                    if (!this.solvedPuzzles.has(i)) {
+                        return i;
+                    }
+                }
+                return 1;
+            }
+            
+            generateAccessCode() {
+                // Generate a 4-digit access code based on puzzle solutions
+                const code = `${this.puzzleAnswers[1]}${this.puzzleAnswers[3]}`.slice(0, 4);
+                this.accessCode = code;
+                
+                // Display the code
+                document.getElementById('generated-code').textContent = code;
+                
+                // Store in localStorage
+                localStorage.setItem('digitalMazeAccessCode', code);
+                
+                // Hide all puzzles and show access code
+                document.querySelectorAll('.puzzle-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                document.getElementById('access-code-card').classList.add('active');
+                
+                // Stop timer
+                clearInterval(this.timerInterval);
+                
+                // Notify main game
+                this.notifyModuleCompletion();
+                
+                console.log('Access code generated:', code);
+            }
+            
+            showHint(puzzleNumber) {
+                const hintText = document.getElementById(`hint-text-${puzzleNumber}`);
+                hintText.classList.add('visible');
+                
+                // Hide hint after 5 seconds
+                setTimeout(() => {
+                    hintText.classList.remove('visible');
+                }, 5000);
+            }
+            
+            copyAccessCode() {
+                if (this.accessCode) {
+                    navigator.clipboard.writeText(this.accessCode).then(() => {
+                        this.showSuccess('Access code copied to clipboard!');
+                    }).catch(() => {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = this.accessCode;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        this.showSuccess('Access code copied!');
+                    });
+                }
+            }
+            
+            proceedToMaze() {
+                window.location.href = 'maze.html';
+            }
+            
+            goBackToMenu() {
+                window.location.href = 'index.html';
+            }
+            
+            notifyModuleCompletion() {
+                // Save completion state
+                const gameState = JSON.parse(localStorage.getItem('digitalMazeGameState') || '{}');
+                gameState.completedModules = gameState.completedModules || [];
+                gameState.accessCode = this.accessCode;
+                gameState.puzzlesSolved = this.solvedPuzzles.size;
+                
+                if (!gameState.completedModules.includes('codebreaker')) {
+                    gameState.completedModules.push('codebreaker');
+                }
+                
+                localStorage.setItem('digitalMazeGameState', JSON.stringify(gameState));
+            }
+            
+            showSuccess(message) {
+                this.showNotification(message, 'success');
+            }
+            
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    background: ${type === 'success' ? '#00ff00' : type === 'error' ? '#ff0000' : '#00ffff'};
+                    color: #000000;
+                    border-radius: 10px;
+                    z-index: 10000;
+                    font-weight: bold;
+                    max-width: 300px;
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                // Add animation styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                if (!document.head.querySelector('style[data-notifications]')) {
+                    style.setAttribute('data-notifications', 'true');
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // Initialize the game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Codebreaker module initializing...');
+            
+            const game = new CodebreakerGame();
+            
+            // Make game accessible for debugging
+            window.codebreakerGame = game;
+            
+            console.log('Codebreaker module initialized successfully');
+        });
+    </script>
+</body>
+</html>
