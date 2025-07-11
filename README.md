@@ -1,12 +1,12 @@
-# 🧩 Escape the Digital Maze
+# Escape the Digital Maze
 
 A two-stage web game built with HTML, CSS, and JavaScript featuring logic puzzles and maze navigation with a digital cyber theme.
 
-## 🎮 Game Overview
+## Game Overview
 
 You're trapped inside a virtual system. To escape, you must first solve logic puzzles to get an access code, and then use that code to navigate through a digital maze.
 
-## 🔹 Game Modules
+## Game Modules
 
 ### 1. Codebreaker Room
 - **Objective**: Solve 4 logic puzzles to unlock a digital passcode
@@ -31,7 +31,7 @@ You're trapped inside a virtual system. To escape, you must first solve logic pu
   - Hint system for pathfinding
   - Visual feedback for visited cells
 
-## 🎯 How to Play
+## How to Play
 
 1. **Start**: Open `index.html` in a web browser
 2. **Codebreaker**: Click "Start Puzzles" to begin the logic challenges
@@ -39,7 +39,7 @@ You're trapped inside a virtual system. To escape, you must first solve logic pu
 4. **Maze Navigation**: Use the access code to unlock the maze
 5. **Escape**: Navigate through the maze to reach the exit and win!
 
-## 💻 Technical Details
+## Technical Details
 
 ### Technologies Used
 - **HTML5**: Semantic markup and structure
